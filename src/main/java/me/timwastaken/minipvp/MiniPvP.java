@@ -1,8 +1,8 @@
-package me.author.minecraftPluginTemplate;
+package me.timwastaken.minipvp;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class MinecraftPluginTemplate extends JavaPlugin {
+public final class MiniPvP extends JavaPlugin {
 
     @Override
     public void onEnable() {

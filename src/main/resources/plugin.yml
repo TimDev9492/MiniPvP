@@ -10,6 +10,8 @@ api-version: '1.21'
 # (also displayed as the minimum version in the output jar filename)
 compiled-version: '1.21.11'
 
+softdepend: [Multiverse-Core, Multiverse-NetherPortals]
+
 # Select which fields of this yml get printed to STDOUT using the printMetadata Task
 expose:
   - version

@@ -8,10 +8,11 @@ buildscript {
 
 plugins {
     id 'java'
+    id 'com.gradleup.shadow' version "$gradleup_shadow_version"
 }
 
 def pluginYml = new Yaml().load(new File('src/main/resources/plugin.yml').newInputStream())
-def jarFilename = String.format('%s-%s+%s+.jar', pluginYml.name, pluginYml.version, pluginYml['compiled-version'])
+def jarFilename = String.format('%s-%s+%s.jar', pluginYml.name, pluginYml.version, pluginYml['compiled-version'])
 
 group = 'me.timwastaken'
 version = pluginYml.version
@@ -22,10 +23,22 @@ repositories {
         name = "spigotmc-repo"
         url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
     }
+    maven {
+        name = "onarandombox-repo"
+        url = "https://repo.onarandombox.com/content/groups/public/"
+    }
+    maven {
+        name = "panda-repository"
+        url = "https://repo.panda-lang.org/releases"
+    }
 }
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:${pluginYml['compiled-version']}-R0.1-SNAPSHOT")
+    compileOnly("org.mvplugins.multiverse.core:multiverse-core:${multiverse_core_version}")
+    compileOnly("org.mvplugins.multiverse.netherportals:multiverse-netherportals:${multiverse_netherportals_version}")
+    implementation("dev.rollczi:litecommands-bukkit:${litecommands_version}")
+    implementation("fr.mrmicky:fastboard:2.1.5")
 }
 
 def targetJavaVersion = 21
@@ -40,7 +53,21 @@ java {
 
 // Set the output jar file name accordingly
 tasks.jar {
+//    archiveFileName.set(jarFilename)
+    enabled = false
+}
+
+tasks.compileJava {
+    options.compilerArgs.add("-parameters")
+}
+
+tasks.shadowJar {
     archiveFileName.set(jarFilename)
+
+    [
+            'dev.rollczi.litecommands',
+            'fr.mrmicky.fastboard',
+    ].each { pkg -> relocate(pkg, "${group}.lib.$pkg") }
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -9,23 +9,22 @@ import me.timwastaken.minipvp.ui.Notifications;
 import me.timwastaken.minipvp.ui.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import org.bukkit.entity.Animals;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Salmon;
-import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,6 +41,7 @@ public class MiniPvPGame implements Listener {
                 (remSeconds % 60 == 0 && remMinutes <= 2 ||
                         remSeconds == 30 || remSeconds == 15 || remSeconds == 10 || remSeconds <= 5);
     };
+    private static final String SCOREBOARD_TEAM_NAME = "nopvp";
 
     private final PluginResourceManager resourceManager;
     private final World overworld;
@@ -55,6 +55,8 @@ public class MiniPvPGame implements Listener {
     private boolean lockPlayerMovement;
     private boolean gameRunning;
     private Instant protectionStart;
+
+    private final Team pvpTeam;
 
     public MiniPvPGame(
             PluginResourceManager resourceManager,
@@ -71,6 +73,9 @@ public class MiniPvPGame implements Listener {
         this.participants = new HashSet<>();
         this.playerLives = new HashMap<>();
         this.sortedByLives = new HashMap<>();
+
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        this.pvpTeam = scoreboard.registerNewTeam(SCOREBOARD_TEAM_NAME);
 
         prepareWorlds();
         this.lockPlayerMovement = true;
@@ -175,8 +180,11 @@ public class MiniPvPGame implements Listener {
         gameRunning = true;
 
 //        overworld.setGameRule(GameRule.ADVANCE_TIME, true);
-        overworld.setGameRule(GameRule.MOB_GRIEFING, true);
+        overworld.setGameRuleValue("doDayLightCycle", "true");
+//        overworld.setGameRule(GameRule.MOB_GRIEFING, true);
+        overworld.setGameRuleValue("mobGriefing", "true");
 //        overworld.setGameRule(GameRule.ADVANCE_WEATHER, true);
+        overworld.setGameRuleValue("doWeatherCycle", "true");
         overworld.setTime(0L);
         lockPlayerMovement = false;
         protectionStart = Instant.now();
@@ -220,22 +228,32 @@ public class MiniPvPGame implements Listener {
     private void endProtectionPeriod() {
         Notifications.announceProtectionPeriodEnd(participants);
         Sounds.FIGHT_ANNOUNCEMENT.playTo(participants);
-        overworld.setGameRule(GameRule.PVP, true);
-        nether.setGameRule(GameRule.PVP, true);
+        setPVP(true);
+    }
+
+    private void setPVP(boolean pvp) {
+        pvpTeam.setAllowFriendlyFire(pvp);
     }
 
     private void prepareWorlds() {
 //        overworld.setGameRule(GameRule.ADVANCE_TIME, false);
-        overworld.setGameRule(GameRule.MOB_GRIEFING, false);
+        overworld.setGameRuleValue("doDayLightCycle", "false");
+//        overworld.setGameRule(GameRule.MOB_GRIEFING, false);
+        overworld.setGameRuleValue("mobGriefing", "false");
 //        overworld.setGameRule(GameRule.ADVANCE_WEATHER, false);
-        overworld.setGameRule(GameRule.PVP, false);
-        overworld.setGameRule(GameRule.KEEP_INVENTORY, true);
+        overworld.setGameRuleValue("doDayLightCycle", "false");
+        setPVP(false);
+//        overworld.setGameRule(GameRule.KEEP_INVENTORY, true);
+        overworld.setGameRuleValue("keepInventory", "true");
         overworld.setTime(6000L);
-        overworld.setGameRule(GameRule.LOCATOR_BAR, false);
 
-        nether.setGameRule(GameRule.PVP, false);
-        nether.setGameRule(GameRule.KEEP_INVENTORY, true);
-        nether.setGameRule(GameRule.LOCATOR_BAR, false);
+//        nether.setGameRule(GameRule.KEEP_INVENTORY, true);
+        nether.setGameRuleValue("keepInventory", "true");
+
+        for (OptionalOnlinePlayer participant : participants) {
+            String name = participant.getOffline().getName();
+            pvpTeam.addEntry(name);
+        }
     }
 
     private boolean recordPlayerDeath(Player participant) {
@@ -349,7 +367,8 @@ public class MiniPvPGame implements Listener {
         if (!isInGameEnvironment(event.getBlock().getWorld())) return;
         Map<Material, ItemStack> modifiedDrops = gameConfig.modifiedDrops();
         if (!modifiedDrops.containsKey(event.getBlock().getType())) return;
-        event.setDropItems(false);
+        event.setCancelled(true);
+        event.getBlock().setType(Material.AIR);
         final ItemStack modified = modifiedDrops.get(event.getBlock().getType());
         event.getBlock().getWorld().dropItemNaturally(
                 event.getBlock().getLocation().add(0.5, 0.5, 0.5),

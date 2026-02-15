@@ -1,6 +1,7 @@
 package me.timwastaken.minipvp.ui;
 
 import me.timwastaken.minipvp.common.OptionalOnlinePlayer;
+import me.timwastaken.minipvp.common.ReflectionUtils;
 import me.timwastaken.minipvp.game.MiniPvPGame;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,7 +21,7 @@ public class Notifications {
     public static void announceGameStart(Collection<OptionalOnlinePlayer> receivers, long protectionSeconds) {
         for (OptionalOnlinePlayer receiver : receivers) {
             receiver.run(player -> {
-                player.sendTitle(
+                ReflectionUtils.sendTitle(player,
                         String.format("%s%sGo!", ChatColor.GREEN, ChatColor.BOLD),
                         String.format("%s%d seconds of protection", ChatColor.GRAY, protectionSeconds),
                         0, 80, 20
@@ -44,7 +45,7 @@ public class Notifications {
     public static void showCountdownTo(Collection<OptionalOnlinePlayer> receivers, long remainingSeconds) {
         for (OptionalOnlinePlayer receiver : receivers) {
             receiver.run(player -> {
-                player.sendTitle(
+                ReflectionUtils.sendTitle(player,
                         String.format("%s%s%d", ChatColor.RED, ChatColor.BOLD, remainingSeconds),
                         null,
                         0, 15, 6
@@ -54,7 +55,7 @@ public class Notifications {
     }
 
     public static void showEliminationTo(Player p) {
-        p.sendTitle(
+        ReflectionUtils.sendTitle(p,
                 String.format("%s%sEliminated", ChatColor.DARK_RED, ChatColor.BOLD),
                 String.format("%sYou are out of the game", ChatColor.GRAY),
                 10, 80, 10
@@ -76,7 +77,7 @@ public class Notifications {
 
     public static void announceGameWinnerTo(Set<OptionalOnlinePlayer> receivers, String winnerName) {
         for (OptionalOnlinePlayer receiver : receivers) {
-            receiver.run(player -> player.sendTitle(
+            receiver.run(player -> ReflectionUtils.sendTitle(player,
                     String.format("%s%s%s", ChatColor.GOLD, ChatColor.BOLD, winnerName),
                     String.format("%swon the game", ChatColor.GRAY),
                     10, 80, 10
@@ -194,7 +195,7 @@ public class Notifications {
     public static void announceProtectionPeriodEnd(Collection<OptionalOnlinePlayer> receivers) {
         for (OptionalOnlinePlayer receiver : receivers) {
             receiver.run(player -> {
-                player.sendTitle(
+                ReflectionUtils.sendTitle(player,
                         String.format("%s%sProtection Over", ChatColor.YELLOW, ChatColor.BOLD),
                         String.format("%sFriendly Fire is off", ChatColor.GRAY),
                         10, 30, 10

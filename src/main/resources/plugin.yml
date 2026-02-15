@@ -5,10 +5,10 @@ main: me.timwastaken.minipvp.MiniPvP
 version: '1.0.0'
 # Based on this versions, the server decides if the plugin is
 # compatible with the versions it is running
-api-version: '1.21'
+api-version: '1.8'
 # The spigot api version this plugin gets compiled against
 # (also displayed as the minimum version in the output jar filename)
-compiled-version: '1.21.11'
+compiled-version: '1.8.8'
 
 softdepend: [Multiverse-Core, Multiverse-NetherPortals]
 

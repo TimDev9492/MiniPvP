@@ -86,7 +86,7 @@ tasks.register('cleanBuildDeploy', GradleBuild) {
     tasks = ['clean', 'build', 'deploy']
 }
 
-tasks.register('printMetadata') {
+tasks.register('metadata') {
     doLast{
         println "filename=$jarFilename"
 

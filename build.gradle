@@ -88,13 +88,17 @@ tasks.register('cleanBuildDeploy', GradleBuild) {
 
 tasks.register('metadata') {
     doLast{
-        println "filename=$jarFilename"
+        def prefix = "plugin"
+
+        println "${prefix}_filename=$jarFilename"
 
         if (pluginYml.expose != null && pluginYml.expose instanceof List) {
             pluginYml.expose.each { key ->
                 def value = pluginYml.get(key)
                 if (value != null) {
-                    println "${key}=${value}"
+                    def safeKey = key
+                            .replaceAll(/[^a-zA-Z0-9_]/, "_")   // replace invalid chars
+                    println "${prefix}_${safeKey}=${value}"
                 }
             }
         }

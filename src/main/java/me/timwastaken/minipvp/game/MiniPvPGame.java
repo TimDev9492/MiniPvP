@@ -110,9 +110,9 @@ public class MiniPvPGame implements Listener {
     }
 
     public void startCountdown(long countdownSeconds) {
-        if (participants.size() < 2) throw new IllegalOperationException(
-                "Cannot start the game with less than two players."
-        );
+//        if (participants.size() < 2) throw new IllegalOperationException(
+//                "Cannot start the game with less than two players."
+//        );
 
         // teleport players to world
         teleportToSpawn(
@@ -368,8 +368,8 @@ public class MiniPvPGame implements Listener {
         Map<Material, ItemStack> modifiedDrops = gameConfig.modifiedDrops();
         if (!modifiedDrops.containsKey(event.getBlock().getType())) return;
         event.setCancelled(true);
+        ItemStack modified = modifiedDrops.get(event.getBlock().getType());
         event.getBlock().setType(Material.AIR);
-        final ItemStack modified = modifiedDrops.get(event.getBlock().getType());
         event.getBlock().getWorld().dropItemNaturally(
                 event.getBlock().getLocation().add(0.5, 0.5, 0.5),
                 modified
